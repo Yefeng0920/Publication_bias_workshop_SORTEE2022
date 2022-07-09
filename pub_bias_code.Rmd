@@ -1,0 +1,162 @@
+---
+title: "A primer on publication bias tests"
+subtitle: "Theory and hands-on tutorial on publication bias tests"
+author: "Yefeng Yang, Malgorzata Lagisz, Alfredo Sánchez-Tójar"
+output:
+  rmdformats::robobook:
+    code_folding: show
+    self_contained: true
+    thumbnails: false
+    lightbox: true
+pkgdown:
+  as_is: true   
+bibliography: "ref/REFERENCES.bib"
+csl: "ref/Ecology.csl"
+link-citations: yes
+---
+
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+# Instructions  
+This interactive format Rmarkdown/html is used to provide participants with a hands-on tutorial, which can be directly adjusted to their own analyses.
+
+
+# Loading packages  
+
+Load the`R` packages used in this tutorial. The main `R` packages used in this tutorial are `metafor` (for model fitting; @viechtbauer2010conducting) and `orchaRd` (for results reporting; @nakagawa2021orchard). All other `R` packages are used for data manipulations, visualizations and rmarkdown knitting.   
+
+```{r, cache = FALSE}
+# the following packages are used for knitting, participants do not need to install and load them
+pacman::p_load(tidyverse, 
+               knitr,
+               DT,
+               readxl,
+               patchwork,
+               ggplot2,
+               pander,
+               formatR,
+               rmdformats
+               )
+```
+
+As we elaborated in the slides and elsewhere (@nakagawa2022methods), a straightforward way to identify decline effect is to regress effect size estimates on the publication year. But, to do it properly, we need to account for the heterogeneity and non-independence among the effect size estimates. This is done by using a so-called **multilevel multi-moderator meta-regression**. Mathematically, this model can be expressed as:    
+
+$$
+y_{ij} = \beta_{0} + \beta_{year}c(year_{ij}) + \beta_{se}se_{ij} + \sum \beta_{k}x_{ik} + \mu_{(b)j} + \mu_{(w)ij} + e_{ij}, \\ \mu_{(b)j} \sim N(0,\sigma_{(b)}^2)\\ \mu_{(w)ij} \sim N(0,\sigma_{(w)}^2)\\ e_{ij} \sim N(0,\nu_{ij})
+$$
+  
+The model slopes ($\beta_{year}$) and ($\beta_{se}$) can be used to indicate the presence of a decline effect and small-study effect, respectively (@nakagawa2012methodological, @koricheva2019temporal). When the significance test of the model slopes rejects the null hypothesis ($\beta_{year}$ = 0 [no decline effect] or $\beta_{se}$ = 0 [small-study effect]), we  obtain statistically significant slopes $\beta_{year}$ or $\beta_{se}$, which indicate that there is a decline effect or a small-study effect, respectively. The magnitude of the model slopes can be interpreted as the severity of publication bias.  
+
+There are three points of note:  
+(i) to ease interpretations, it is a good choice to center $year_{ij}$ ($c(year_{ij})$) and other continuous moderator variables before fitting the model,  
+(ii) the inclusion of the fixed-effects terms $\sum \beta_{k}x_{ik}$ is used to account for heterogeneity and maximize the statistical power, and   
+(iii) the two random-effects terms $\mu_{(b)j}$ (between-study effect) and $\mu_{(w)ij}$ (within-study effect) can be used to control for the type I error rates  (@rodgers2021evaluating, @nakagawa2022methods). 
+
+Such a multilevel multi-moderator meta-regression looks complex, but it is not difficult to construct it using existing software, for example, `rma.mv()` function in `metafor` package. Below we randomly choose one meta-analysis paper in @costello2022decline's dataset as an example to show how to do this.  
+
+> Montagano L, Leroux S J, Giroux M A, et al. The strength of ecological subsidies across ecosystems: a latitudinal gradient of direct and indirect impacts on food webs[J]. Ecology Letters, 2019, 22(2): 265-274.
+
+# Load and process data from the example paper  
+
+```{r}
+# load package
+library(readr) # package for reading data 
+
+# load data
+montagano.et.al.2019.ecol.letts.dat <- read_csv(file = "data/montagano.et.al.2019.ecol.letts.csv")
+
+# have a look at the data
+head(montagano.et.al.2019.ecol.letts.dat)
+
+# load package
+library(metafor) # package for performing meta-analysis
+# compute effect size and its sampling variance
+montagano.et.al.2019.ecol.letts.dat <- escalc(measure = "ROM", 
+                                              n1i = n_subsidy, n2i = n_nosubsidy,
+                                              m1i = Subsidy_mean, m2i = Nosubsidy_mean, 
+                                              sd1i = Subsidy_sd, sd2i = Nosubsidy_sd, 
+                                              append=TRUE, replace=TRUE, 
+                                              data = montagano.et.al.2019.ecol.letts.dat)
+
+# delete NAs
+montagano.et.al.2019.ecol.letts.dat <- montagano.et.al.2019.ecol.letts.dat[!is.na(montagano.et.al.2019.ecol.letts.dat$yi) & !is.na(montagano.et.al.2019.ecol.letts.dat$vi), ]
+
+# have a look at the data
+t <- montagano.et.al.2019.ecol.letts.dat %>% DT::datatable()
+t
+```
+
+
+# Conduct publication bias test (testing decline effect and small-study effect)    
+
+```{r}
+# add an unique identifier to each row (effect size) to account for the residual heterogeneity
+montagano.et.al.2019.ecol.letts.dat$obsID <- 1:nrow(montagano.et.al.2019.ecol.letts.dat)
+# center publication year and other continuous moderator variables to ease interpretation of the results
+## center year
+montagano.et.al.2019.ecol.letts.dat$Year.c <- montagano.et.al.2019.ecol.letts.dat$Year - mean(montagano.et.al.2019.ecol.letts.dat$Year)
+## center latitude
+montagano.et.al.2019.ecol.letts.dat$Latitude.c <- montagano.et.al.2019.ecol.letts.dat$Latitude - mean(montagano.et.al.2019.ecol.letts.dat$Latitude)
+## center altitude
+montagano.et.al.2019.ecol.letts.dat$Longitude.c <- montagano.et.al.2019.ecol.letts.dat$Longitude - mean(montagano.et.al.2019.ecol.letts.dat$Longitude)
+
+# create a variable to contain sampling error, which can be used as a predictor to identify small-study effect
+montagano.et.al.2019.ecol.letts.dat$sei <- sqrt(montagano.et.al.2019.ecol.letts.dat$vi)
+
+# simultaneously detect decline effect and small-study effect
+
+pub_bias_test <- rma.mv(yi, vi, 
+                        random = list(~ 1 | ID, ~ 1 | obsID),
+                        mods = ~ Year.c + sei + Latitude.c + Longitude.c + System + Taxon + Taxon -1,
+                        test = "t",
+                        method = "REML",
+                        data = montagano.et.al.2019.ecol.letts.dat) # Latitude,  Longitude,  System, Taxon and Taxon are moderator variables used in the original paper
+```
+
+Let's have a look at the model results of the above fitted multilevel multi-moderator meta-regression with:
+
+```{r}
+summary(pub_bias_test)
+```
+
+# Report the results of the publication bias test
+
+We see that the model slope $\beta_{year}$ (`Year.c`) is not statistically significant at the nominal alpha level (0.05), which indicates that there is no decline effect. But when we visually present the results of the decline effect test (which can be done by `bubble_plot` in `orchaRd`; @nakagawa2021orchard), we can see a temporal trens in the changes of the effect size magnitude (**Figure 1**). The estimate of slope $\beta_{year}$ is -0.0245 (95% CI = -0.0521 to 0.0031), indicating that the effect size magnitude will decline by 0.245 over 10 years. If we only focus on the dichotomous reports on the decline effect test (*p*-value < 0.05 meaning decline effect *vs.* *p*-value > 0.05 meaning no decline effect), we would neglect the real decline of the effect size magnitude.
+
+```{r decline effect test, fig.cap="Figure 1. Bubble plot showing the relationship between publication year and effect size magnitude "}
+
+# load package
+library(orchaRd) # package for visualizations of results of publication bias test 
+# you need to install the latest version via devtools::install_github("daniel1noble/orchaRd", force = TRUE, build_vignettes = TRUE)
+
+de <- bubble_plot(pub_bias_test, mod = "Year.c", 
+                  xlab = "Publication year (centered by mean year 2010)", ylab = "Model slope of publication year",
+                  group = "ID",
+                  data = montagano.et.al.2019.ecol.letts.dat, legend.pos = "none") +
+                  theme(axis.text.x = element_text(size = 10, colour = "black"),
+                        axis.text.y = element_text(size = 10, colour = "black"),
+                        axis.title.x = element_text(size = 10, colour = "black"),
+                        plot.title = element_text(size = 10, colour = "black"))
+de
+```
+
+The similar interpretation philosophy can be applied to the test of small-study effect. The model slope $\beta_{se}$ (`sei`) is statistically significant at the nominal alpha level (0.05), which indicates that there is a small-study effect. The visual presentation of the model results also confirms that small studies (with low precision) are more likely to report large effects (**Figure 2**). The estimate of slope $\beta_{year}$ is very large 0.6292 (95% CI = 0.23 to 1.0283), implying that we should interpret the results and conclusions of @montagano2019strength with caution.  
+
+```{r small-study effect, fig.cap="Figure 2. Bubble plot showing the relationship between sampling error (inverse precision) anf effect size magnitude"}
+sse <- bubble_plot(pub_bias_test, mod = "sei", 
+                   xlab = "Sampling error", ylab = "Model slope of sampling error",
+                   group = "ID",
+                   data = montagano.et.al.2019.ecol.letts.dat, legend.pos = "none") +
+                   theme(axis.text.x = element_text(size = 10, colour = "black"),
+                         axis.text.y = element_text(size = 10, colour = "black"),
+                         axis.title.x = element_text(size = 10, colour = "black"),
+                         plot.title = element_text(size = 10, colour = "black"))
+sse
+```
+
+
+Participants can modify the above code to identify publication bias (small-study effect and decline effect) and (visually) report the associated results. If you prefer an `rmd` version of the code, please refer to our [Github repository: Yefeng0920/Publication_bias_workshop_SORTEE2022](https://github.com/Yefeng0920/Publication_bias_workshop_SORTEE2022). If you are after a comprehensive theoretical knowledge on the publication bias test in ecology and evolution, we recommend you to thoroughly read our recent methodological paper published in *Methods in Ecology and Evolution* (@nakagawa2022methods). In this paper, we summarized the current practice of publication bias tests in ecology and evolution; we also proposed the multilevel multi-moderator meta-regression method approach.   
+
+# References
