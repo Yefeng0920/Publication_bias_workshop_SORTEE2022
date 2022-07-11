@@ -130,7 +130,7 @@ library(orchaRd) # package for visualizations of results of publication bias tes
 # you need to install the latest version via devtools::install_github("daniel1noble/orchaRd", force = TRUE, build_vignettes = TRUE)
 
 de <- bubble_plot(pub_bias_test, mod = "Year.c", 
-                  xlab = "Publication year (centered by mean year 2010)", ylab = "Model slope of publication year",
+                  xlab = "Publication year (centered by mean year 2010)", ylab = "Effect size",
                   group = "ID",
                   data = montagano.et.al.2019.ecol.letts.dat, legend.pos = "none") +
                   theme(axis.text.x = element_text(size = 10, colour = "black"),
@@ -147,7 +147,7 @@ The similar interpretation philosophy can be applied to the test of small-study 
 
 ```{r small-study effect, fig.cap="Figure 2. Bubble plot showing the relationship between sampling error (inverse precision) anf effect size magnitude"}
 sse <- bubble_plot(pub_bias_test, mod = "sei", 
-                   xlab = "Sampling error", ylab = "Model slope of sampling error",
+                   xlab = "Sampling error", ylab = "Effect size",
                    group = "ID",
                    data = montagano.et.al.2019.ecol.letts.dat, legend.pos = "none") +
                    theme(axis.text.x = element_text(size = 10, colour = "black"),
