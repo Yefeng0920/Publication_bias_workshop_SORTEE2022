@@ -157,7 +157,7 @@ sse <- bubble_plot(pub_bias_test, mod = "sei",
 sse
 ```
 
-The visual presentation of the model results also confirms that small studies (with low precision) are more likely to report large effects (**Figure 2**). The estimate of slope $\beta_{2}$ is very large 0.6292 (95% CI = 0.23 to 1.0283), implying that we should interpret the results and conclusions of @montagano2019strength with caution.  
+The visual presentation of the model results also confirms that small studies (with low precision) are more likely to report large effects (**Figure 2**). The estimate of slope $\beta_{1}$ is very large 0.6292 (95% CI = 0.23 to 1.0283), implying that we should interpret the results and conclusions of @montagano2019strength with caution.  
 
 We can also use a funnel plot (Figure 3) to visually check the asymmetry.
 
