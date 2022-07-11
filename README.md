@@ -29,3 +29,7 @@ A more comprehensive how-to guide to test and adjust for publication bias materi
 
 Please, be aware that on the upper right-hand corner of this html, you can click on “Code” and be able to: (1) Show All Code accompanying the text in the html file, and (2) Download Rmd, that is, be able to download the Rmarkdown file, which you can then open and adjust in, e.g. RStudio.
 
+The slides we present in the workwhop can be found here: https://github.com/Yefeng0920/Publication_bias_workshop_SORTEE2022/tree/main/slides
+
+You can join the discussion via Slack workspace: https://sortee.slack.com/archives/C03M36AE9E0
+
