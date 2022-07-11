@@ -19,7 +19,7 @@ There are no formal requirements for participating, but knowledge of R is desira
 - To provide participants with a hands-on tutorial (with R code), which can be directly adjusted to their own analyses
 
 # Instructions
-Some examples of publication bias in ecology and evolution, methodological paper for publication bias can be found here: 
+Some examples of publication bias in ecology and evolution, methodological paper for publication bias can be found here: https://github.com/Yefeng0920/Publication_bias_workshop_SORTEE2022/tree/main/pdf
 
 A quick hands-on tutorial for the workshop can be accessed from here: https://github.com/Yefeng0920/Publication_bias_workshop_SORTEE2022/blob/main/pub_bias_code.html
 
