@@ -1,10 +1,10 @@
-# Publication bias workshop at SORTEE2022 (SORTEE.org)
+# Publication bias workshop at SORTEE2022 ([SORTEE.org](https://www.sortee.org/))
 
 ## Workshop Topic
 Test, adjust for, and report publication bias
 
 ## Facilitators
-Dr. Yefeng Yang, Dr. Malgorzata Lagisz, and Alfredo Sánchez-Tójar
+Dr. Yefeng Yang, Dr. Malgorzata Lagisz, and Dr. Alfredo Sánchez-Tójar
 
 ## Target Audience
 The targeted audience is any researcher conducting, or planning to conduct, a meta-analysis. Publication bias testing is an essential part of a meta-analysis. Thus, every meta-analyst should know how to properly test and adjust for publication bias to ensure that their meta-analytic inferences are robust and reliable before disseminating them. 
