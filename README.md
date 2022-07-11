@@ -21,8 +21,11 @@ There are no formal requirements for participating, but knowledge of R is desira
 # Instructions
 Some examples of publication bias in ecology and evolution, methodological paper for publication bias can be found here: https://github.com/Yefeng0920/Publication_bias_workshop_SORTEE2022/tree/main/pdf
 
-A quick hands-on tutorial for the workshop can be accessed from here: https://github.com/Yefeng0920/Publication_bias_workshop_SORTEE2022/blob/main/pub_bias_code.html
+A quick hands-on tutorial (HTML version) for the workshop can be accessed from here: https://github.com/Yefeng0920/Publication_bias_workshop_SORTEE2022/blob/main/pub_bias_code.html
+
+A Rmd version can be found here: https://github.com/Yefeng0920/Publication_bias_workshop_SORTEE2022/blob/main/pub_bias_code.Rmd
 
 A more comprehensive how-to guide to test and adjust for publication bias materials can be accessed from here: https://github.com/itchyshin/publication_bias
 
 Please, be aware that on the upper right-hand corner of this html, you can click on “Code” and be able to: (1) Show All Code accompanying the text in the html file, and (2) Download Rmd, that is, be able to download the Rmarkdown file, which you can then open and adjust in, e.g. RStudio.
+
