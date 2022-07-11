@@ -121,7 +121,7 @@ summary(pub_bias_test)
 
 # Report publication bias
 
-We see that the model slope $\beta_{2}$ (`Year.c`) is not statistically significant, which indicates that there is no decline effect. Lets's visually present the results of the decline effect test (which can be done by `bubble_plot` in `orchaRd`; @nakagawa2021orchard)
+We see that the model slope $\beta_{2}$ (`Year.c`) is not statistically significant, which indicates that there is no decline effect. Let's visually present the results of the decline effect test (which can be done by `bubble_plot` in `orchaRd`; @nakagawa2021orchard)
 
 ```{r decline effect test, fig.cap="Figure 1. Bubble plot showing the relationship between publication year and effect size magnitude "}
 
