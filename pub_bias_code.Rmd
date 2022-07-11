@@ -1,6 +1,6 @@
 ---
 title: "Test, adjust for, and report publication bias: a primer"
-subtitle: "Doing publication bias in R: a Hands-on guide"
+subtitle: "Doing publication bias test in R: a Hands-on guide"
 author: "Yefeng Yang, Malgorzata Lagisz, Alfredo Sánchez-Tójar"
 output:
   rmdformats::robobook:
@@ -20,7 +20,7 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 ```
 
 # Instructions  
-This interactive format Rmarkdown/html is used to provide participants with a hands-on guide and R code, which can be directly adjusted to their own publication bias.
+This interactive format Rmarkdown/html is used to provide participants with a hands-on guide and R code, which can be directly adjusted to their own publication bias tests.
 
 
 # Loading packages  
@@ -59,7 +59,7 @@ head(montagano.et.al.2019.ecol.letts.dat)
 ```
 
 
-Such a extended Egger's regression model looks complex, but it is not difficult to construct it using existing software, for example, `rma.mv()` function in `metafor` package.
+As shown in the slides, the extended Egger's regression model looks complex, but it is not difficult to construct it using existing software, for example, `rma.mv()` function in `metafor` package.
 
 ```{r caclulate effect size}
 # load package
@@ -81,21 +81,21 @@ t
 ```
 
 
-# Test publication bias (testing small-study effect and decline effect)    
+# Test publication bias (testing small-study effects and decline effects)    
 
 Recall the mathematical formulas used to test publication bias:
 
 $$
-y_{i} = \beta_{0} + \beta_{1}se_{i} + \beta_{2}c(year_{j}) + \sum \beta_{k}x_{k} + \mu_{(b)j} + \mu_{(w)i} + e_{i}, \\ \mu_{(b)j} \sim N(0,\sigma_{(b)}^2)\\ \mu_{(w)i} \sim N(0,\sigma_{(w)}^2)\\ m_{i} \sim N(0,\nu_{i})
+y_{i} = \beta_{0} + \beta_{1}se_{i} + \beta_{2}c(year_{j}) + \sum \beta_{k}x_{k} + \mu_{(b)j} + \mu_{(w)i} + m_{i}, \\ \mu_{(b)j} \sim N(0,\sigma_{(b)}^2)\\ \mu_{(w)i} \sim N(0,\sigma_{(w)}^2)\\ m_{i} \sim N(0,\nu_{i})
 $$
 
 ```{r test pb}
-# add an unique identifier to each row (effect size) to account for the residual heterogeneity
+# add an unique identifier to each row (effect size) to account for multiple effect sizes nested within the same studies
 montagano.et.al.2019.ecol.letts.dat$obsID <- 1:nrow(montagano.et.al.2019.ecol.letts.dat)
 
 # center publication year and other continuous moderator variables to ease interpretation of the results
 ## center year
-montagano.et.al.2019.ecol.letts.dat$Year.c <- montagano.et.al.2019.ecol.letts.dat$Year - mean(montagano.et.al.2019.ecol.letts.dat$Year)
+montagano.et.al.2019.ecol.letts.dat$Year.c <- montagano.et.al.2019.ecol.letts.dat$Year - mean(montagano.et.al.2019.ecol.letts.dat$Year) # this variable will be used as a predictor to estimate decline effects
 ## center latitude
 montagano.et.al.2019.ecol.letts.dat$Latitude.c <- montagano.et.al.2019.ecol.letts.dat$Latitude - mean(montagano.et.al.2019.ecol.letts.dat$Latitude)
 ## center altitude
@@ -121,7 +121,7 @@ summary(pub_bias_test)
 
 # Report publication bias
 
-We see that the model slope $\beta_{2}$ (`Year.c`) is not statistically significant at the nominal alpha level (0.05), which indicates that there is no decline effect. But when we visually present the results of the decline effect test (which can be done by `bubble_plot` in `orchaRd`; @nakagawa2021orchard), we can see a temporal trend in the changes of the effect size magnitude (**Figure 1**). The estimate of slope $\beta_{2}$ is -0.0245 (95% CI = -0.0521 to 0.0031), indicating that the effect size magnitude will decline by 0.245 over 10 years. If we only focus on the dichotomous reports on the decline effect test (*p*-value < 0.05 meaning decline effect *vs.* *p*-value > 0.05 meaning no decline effect), we would neglect the real decline of the effect size magnitude.
+We see that the model slope $\beta_{2}$ (`Year.c`) is not statistically significant, which indicates that there is no decline effect. Lets's visually present the results of the decline effect test (which can be done by `bubble_plot` in `orchaRd`; @nakagawa2021orchard)
 
 ```{r decline effect test, fig.cap="Figure 1. Bubble plot showing the relationship between publication year and effect size magnitude "}
 
@@ -140,7 +140,10 @@ de <- bubble_plot(pub_bias_test, mod = "Year.c",
 de
 ```
 
-The similar interpretation philosophy can be applied to the test of small-study effect. The model slope $\beta_{1}$ (`sei`) is statistically significant at the nominal alpha level (0.05), which indicates that there is a small-study effect. The visual presentation of the model results also confirms that small studies (with low precision) are more likely to report large effects (**Figure 2**). The estimate of slope $\beta_{2}$ is very large 0.6292 (95% CI = 0.23 to 1.0283), implying that we should interpret the results and conclusions of @montagano2019strength with caution.  
+We can see a temporal trend in the changes of the effect size magnitude (**Figure 1**). The estimate of slope $\beta_{2}$ is -0.0245 (95% CI = -0.0521 to 0.0031), indicating that the effect size magnitude will decline by 0.245 over 10 years. If we only focus on the dichotomous reports on the decline effect test (*p*-value < 0.05 meaning decline effect *vs.* *p*-value > 0.05 meaning no decline effect), we would neglect the real decline of the effect size magnitude.
+
+
+The similar interpretation philosophy can be applied to the test of small-study effect. The model slope $\beta_{1}$ (`sei`) is statistically significant, which indicates that there is a small-study effect. 
 
 ```{r small-study effect, fig.cap="Figure 2. Bubble plot showing the relationship between sampling error (inverse precision) anf effect size magnitude"}
 sse <- bubble_plot(pub_bias_test, mod = "sei", 
@@ -154,7 +157,9 @@ sse <- bubble_plot(pub_bias_test, mod = "sei",
 sse
 ```
 
-We can also use a classic funnel plot (Figure 3) to visually check the asymmetry.
+The visual presentation of the model results also confirms that small studies (with low precision) are more likely to report large effects (**Figure 2**). The estimate of slope $\beta_{2}$ is very large 0.6292 (95% CI = 0.23 to 1.0283), implying that we should interpret the results and conclusions of @montagano2019strength with caution.  
+
+We can also use a funnel plot (Figure 3) to visually check the asymmetry.
 
 ```{r funnel plot, fig.cap="Figure 3. Visual inspection of the funnel plot to identify the small-study effect"}
 # make a funnel plot
@@ -168,7 +173,7 @@ funnel(pub_bias_test, yaxis = "seinv",
 Recall the mathematical formulas used to adjust for publication bias:
 
 $$
-y_{i} = \beta_{0} + \beta_{1}se_{i}^2 + \beta_{2}c(year_{j}) + \mu_{(b)j} + \mu_{(w)i} + e_{i}, \\ \mu_{(b)j} \sim N(0,\sigma_{(b)}^2)\\ \mu_{(w)i} \sim N(0,\sigma_{(w)}^2)\\ m_{i} \sim N(0,\nu_{i})
+y_{i} = \beta_{0} + \beta_{1}se_{i}^2 + \beta_{2}c(year_{j}) + \sum \beta_{k}x_{k} + \mu_{(b)j} + \mu_{(w)i} + m_{i}, \\ \mu_{(b)j} \sim N(0,\sigma_{(b)}^2)\\ \mu_{(w)i} \sim N(0,\sigma_{(w)}^2)\\ m_{i} \sim N(0,\nu_{i})
 $$
 ```{r adjust for pb}
 # fit the above formula
@@ -212,6 +217,7 @@ t1_2 %>% DT::datatable()
 ```
 
 
+# Conduct your own analyses and further materials to learn
 
 Participants can modify the above code to test and adjust for publication bias (small-study effect and decline effect) and (visually) report the associated results. If you prefer an `rmd` version of the code, please refer to our [Github repository: Yefeng0920/Publication_bias_workshop_SORTEE2022](https://github.com/Yefeng0920/Publication_bias_workshop_SORTEE2022). If you are after a comprehensive theoretical knowledge on the publication bias test in ecology and evolution, we recommend you to thoroughly read our recent methodological paper published in *Methods in Ecology and Evolution* (@nakagawa2022methods). In this paper, we summarized the current practice of publication bias tests in ecology and evolution; we also proposed the multilevel multi-moderator meta-regression method approach.   
 
